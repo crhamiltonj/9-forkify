@@ -6,6 +6,9 @@
 // URL for food2fork
 // https://www.food2fork.com/api/search
 import Search from "./models/Search";
+import Recipe from "./models/Recipe";
+import * as searchView from "./views/searchView";
+import { elements, renderLoader, clearLoader } from "./views/base";
 
 /* Global state of the app
     - Search object
@@ -15,29 +18,46 @@ import Search from "./models/Search";
 */
 const state = {};
 
+// Search Controller
 const controlSearch = async () => {
   // get the query from the view
-  const query = "pizza";
+  const query = searchView.getInput();
+  console.log(query);
 
   if (query) {
     // New search object and add to state
     state.search = new Search(query);
 
     //  Prepare UI for results
+    searchView.clearInput();
+    searchView.clearResults();
+    renderLoader(elements.searchRes);
 
     // Search for results
     await state.search.getResults();
 
     // Render results on UI
-    console.log(state.search.results);
+    clearLoader();
+    searchView.renderResults(state.search.results);
   }
 };
 
-document.querySelector(".search").addEventListener("submit", e => {
+elements.searchForm.addEventListener("submit", e => {
   e.preventDefault();
   controlSearch();
 });
 
-const search = new Search("pizza");
-console.log(search);
-search.getResults();
+elements.searchResPages.addEventListener("click", e => {
+  const btn = e.target.closest(".btn-inline");
+  if (btn) {
+    const goToPage = parseInt(btn.dataset.goto, 10);
+    searchView.clearResults();
+    searchView.renderResults(state.search.results, goToPage);
+    console.log(goToPage);
+  }
+});
+
+// Recipe Controller
+const r = new Recipe(46956);
+r.getRecipe();
+console.log(r);
